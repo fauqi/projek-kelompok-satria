@@ -10,11 +10,18 @@ twinsGLCD glcd(A0,A1,A2,8,7,6,5,4,9);
 #define motorOff digitalWrite(motor,LOW)
 #define Reset    digitalWrite(reset,HIGH)
 char kata [40];
-int ton,toff;
-int flagRun=0;
 
-float lPress1=0;
-int flagRunExecution;
+int flag=0;
+int Ton=0;
+int Toff=0;
+int prevMillis=0;
+unsigned int tick= millis();
+
+// int ton,toff;
+// int flagRun=0;
+
+// float lPress1=0;
+// int flagRunExecution;
   
 void setup() {
   // put your setup code here, to run once:
@@ -28,133 +35,181 @@ pinMode(buzzer,1);
  pinMode(btnPrev,INPUT_PULLUP);
  glcd.setCursor(0,0);
 }
-int a;
-int lastPutaran=-1,lastKoma=-1;
-int flagBuzz;
-int flagBuzzer=0;
-int lastRun=0;
-int counterAtas,counterBawah,counterCombine;
+// int a;
+// int lastPutaran=-1,lastKoma=-1;
+// int flagBuzz;
+// int flagBuzzer=0;
+// int lastRun=0;
+// int counterAtas,counterBawah,counterCombine;
+int motorNyala()
+{
+  // if(millis()-previousMillis>Ton){
+  //   digitalWrite(motor,HIGH);
+  // }
+  
+  // digitalWrite(motor,LOW);
+  Serial.println("masuk menu setting");
+}
 void loop() {
   // put your main code here, to run repeatedly:
 glcd.rutinDisplay();
-
-if(lastPutaran!=ton || flagRun!=lastRun){
-  lastPutaran=ton;
-  lastRun=flagRun;
    glcd.setCursor(0,2);
    glcd.setFontSize(1);
-   sprintf(kata,"%5d",(int)ton);
+   sprintf(kata,"%5d",(int)Ton);
    glcd.print(kata);
-   
-   glcd.setCursor(0,30);
+  
+     glcd.setCursor(0,30);
    glcd.setFontSize(1);
-   sprintf(kata,"%5d",(int)toff);
+   sprintf(kata,"%5d",(int)Toff);
    glcd.print(kata);
+  Serial.println(analogRead(btnNext));
+  Serial.println(analogRead(btnPrev));
+// if(digitalRead(btnNext) == 0 && digitalRead(btnPrev)==0)
+// {
+//   Serial.println(digitalRead(btnNext));
+//   Serial.println(digitalRead(btnPrev));
+//   int i=0;
+//   // for (;;)
+//   // {
+//   //   i++;
+//   //   if (i>2000)
+//   //   {
+      
+//   //     motorNyala();
+//   //     //Serial.println("tunggu");
+//   //     break;
+//   //   }
+//   //   //Serial.println("tunggu");
+//   //  //Serial.println("tunggu");
+//   //  delay(1);
+//   // }
+
+// }
+}
+
+
+
+// int settingMode()
+// {
+
+// }
+// if(lastPutaran!=ton || flagRun!=lastRun){
+//   lastPutaran=ton;
+//   lastRun=flagRun;
+//    glcd.setCursor(0,2);
+//    glcd.setFontSize(1);
+//    sprintf(kata,"%5d",(int)ton);
+//    glcd.print(kata);
    
-   glcd.setCursor(60,5);
-   glcd.setFontSize(1);
-   sprintf(kata,"Reset");
+//    glcd.setCursor(0,30);
+//    glcd.setFontSize(1);
+//    sprintf(kata,"%5d",(int)toff);
+//    glcd.print(kata);
    
-   glcd.setCursor(60,30);
-   glcd.setFontSize(2);
-   if(flagRun)
-     sprintf(kata,"Start");
-   else{
-     sprintf(kata,"Stop");
-   }   
-   glcd.print(kata);
-}
+//    glcd.setCursor(60,5);
+//    glcd.setFontSize(1);
+//    sprintf(kata,"Reset");
+   
+//    glcd.setCursor(60,30);
+//    glcd.setFontSize(2);
+//    if(flagRun)
+//      sprintf(kata,"Start");
+//    else{
+//      sprintf(kata,"Stop");
+//    }   
+//    glcd.print(kata);
+// }
 
-if ((btnNextPressed) && (btnPrevPressed))
-      {
-      counterCombine++;
-      delay(1);
-      }
-      else if(btnNextPressed){
-      counterAtas++;
-      delay(1);
-      }
-      else if(btnPrevPressed){
-      counterBawah++;
-      delay(1);
-      }
-     else{
-      if(counterCombine>1000){
+// if ((btnNextPressed) && (btnPrevPressed))
+//       {
+//       counterCombine++;
+//       delay(1);
+//       }
+//       else if(btnNextPressed){
+//       counterAtas++;
+//       delay(1);
+//       }
+//       else if(btnPrevPressed){
+//       counterBawah++;
+//       delay(1);
+//       }
+//      else{
+//       if(counterCombine>1000){
          
-      }
-      else if(counterCombine >200){
+//       }
+//       else if(counterCombine >200){
          
-      }
-      else if(counterAtas >1000){
-        ton+=1000;
-        if(ton>10000)
-        ton=0;
-      }
-      else if(counterAtas >200){
-      motorOff;
-      flagRun=0;  
-      }
-      else if (counterBawah >1000){
-        toff+=1000;
-        if(toff>10000)
-        toff=0;
-      }
-      else if (counterBawah >200){
-      flagRun^=1;
-      if(flagRun){
-      flagRunExecution=1;
-//    buzzerTime=millis(); 
-      }
-     }
-}
+//       }
+//       else if(counterAtas >1000){
+//         ton+=1000;
+//         if(ton>10000)
+//         ton=0;
+//       }
+//       else if(counterAtas >200){
+//       motorOff;
+//       flagRun=0;  
+//       }
+//       else if (counterBawah >1000){
+//         toff+=1000;
+//         if(toff>10000)
+//         toff=0;
+//       }
+//       else if (counterBawah >200){
+//       flagRun^=1;
+//       if(flagRun){
+//       flagRunExecution=1;
+// //    buzzerTime=millis(); 
+//       }
+//      }
+// }
 
-if(flagRun==1){
-  if(flagRunExecution){
-    motorOn;
-    delay(ton);
-    motorOff;
-    delay(toff);
-  }
-  else{
-    motorOff;
-  }
-}
+// if(flagRun==1){
+//   if(flagRunExecution){
+//     motorOn;
+//     delay(ton);
+//     motorOff;
+//     delay(toff);
+//   }
+//   else{
+//     motorOff;
+//   }
+// }
 
-      counterAtas=0;
-      counterBawah=0;
-      counterCombine=0;
+//       counterAtas=0;
+//       counterBawah=0;
+//       counterCombine=0;
 
-}
-
-
-
-unsigned char btnNextPressed(){
-  if(analogRead(btnNext)<200){
-      lPress1=0;
-      while(analogRead(btnNext)<200){
-        lPress1++;
-        delay(1);
-        if(lPress1>1000){ break; } 
-        if(analogRead(btnPrev)<200) return(3);
-      }
-      if(lPress1>1000)return(2);
-      else {return(1);}
-   }
-  return(0);  
-}
+// }
 
 
-unsigned char btnPrevPressed(){
-  if(analogRead(btnPrev)<200){
-      lPress1=0;
-      while(analogRead(btnPrev)<200){
-        lPress1++;
-        delay(1);
-        if(lPress1>1000){ break; } 
-        if(analogRead(btnNext)<200)return(3);
-      }
-      if(lPress1>1000)return(2);
-      else {return(1);}
-  }
-  return(0);  
-}
+
+// unsigned char btnNextPressed(){
+//   if(analogRead(btnNext)<200){
+//       lPress1=0;
+//       while(analogRead(btnNext)<200){
+//         lPress1++;
+//         delay(1);
+//         if(lPress1>1000){ break; } 
+//         if(analogRead(btnPrev)<200) return(3);
+//       }
+//       if(lPress1>1000)return(2);
+//       else {return(1);}
+//    }
+//   return(0);  
+// }
+
+
+// unsigned char btnPrevPressed(){
+//   if(analogRead(btnPrev)<200){
+//       lPress1=0;
+//       while(analogRead(btnPrev)<200){
+//         lPress1++;
+//         delay(1);
+//         if(lPress1>1000){ break; } 
+//         if(analogRead(btnNext)<200)return(3);
+//       }
+//       if(lPress1>1000)return(2);
+//       else {return(1);}
+//   }
+//   return(0);  
+// }
