@@ -10,7 +10,7 @@ twinsGLCD glcd(A0,A1,A2,8,7,6,5,4,9);
 #define motorOff digitalWrite(motor,LOW)
 #define Reset    digitalWrite(reset,HIGH)
 char kata [40];
-
+int flagRun=0;
 int flag=0;
 int Ton=0;
 int Toff=0;
@@ -62,8 +62,88 @@ glcd.rutinDisplay();
    glcd.setFontSize(1);
    sprintf(kata,"%5d",(int)Toff);
    glcd.print(kata);
-  Serial.println(analogRead(btnNext));
-  Serial.println(analogRead(btnPrev));
+  // Serial.println(analogRead(btnNext));
+  // Serial.println(analogRead(btnPrev));
+  if(flag==0)
+  {
+    Serial.println(flagRun);
+    if(flagRun==1)
+    Serial.println("motor on");
+    else 
+    Serial.println("motor off");
+
+    if(analogRead(btnNext) <500 && analogRead(btnPrev)<500)
+    {
+      
+      int Bcounter=0;
+      for(;;)
+      {
+        if(analogRead(btnNext) >500 || analogRead(btnPrev)>500)break;
+        Bcounter++;
+        Serial.println(Bcounter); 
+        if(Bcounter>1000)
+        {
+         // Serial.println("flagnya jadi 1");
+          flag=1;
+          break;
+          
+          
+        }
+        //Serial.println("didalam for");
+        delay(1);
+      }
+    }
+    if(analogRead(btnNext) <500)
+    {
+      if(flagRun==1)flagRun=0;
+      else flagRun=1;
+      while(analogRead(btnNext) <500);
+    }
+  }
+
+
+
+  else if(flag==1)
+  {
+        if(analogRead(btnNext) <500 && analogRead(btnPrev)<500)
+    {
+      
+      int Bcounter=0;
+      for(;;)
+      {
+        if(analogRead(btnNext) >500 || analogRead(btnPrev)>500)break;
+        Bcounter++;
+        Serial.println(Bcounter); 
+        if(Bcounter>1000)
+        {
+          Serial.println("flagnya jadi 0");
+          flag=0;
+          break;
+          
+          
+        }
+        //Serial.println("didalam for");
+        delay(1);
+      }
+    }
+    if(analogRead(btnNext) <500)
+    {
+      Ton+=1;
+      while(analogRead(btnNext) <500);
+      if(Ton>10)Ton=0;
+    }
+     if(analogRead(btnPrev) <500)
+    {
+      Toff+=1;
+      while(analogRead(btnPrev) <500);
+      if(Toff>10)Toff=0;
+    }
+
+    Serial.println(Ton);
+    Serial.println(Toff);
+    //Serial.println("flagnya dah 1");
+
+  }
 // if(digitalRead(btnNext) == 0 && digitalRead(btnPrev)==0)
 // {
 //   Serial.println(digitalRead(btnNext));
