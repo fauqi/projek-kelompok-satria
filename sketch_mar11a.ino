@@ -1,8 +1,11 @@
 #include "twinsGLCD.h"
+#include "EEPROM.h"
+
 twinsGLCD glcd(A0, A1, A2, 8, 7, 6, 5, 4, 9);
 #define btnNext A6
 #define btnPrev A7
-#define opto1 A2
+#define opto1 A3
+#define opto2 2
 #define buzzer A4
 #define motor A4
 #define reset A7
@@ -11,21 +14,21 @@ twinsGLCD glcd(A0, A1, A2, 8, 7, 6, 5, 4, 9);
 #define Reset digitalWrite(reset, HIGH)
 
 char kata[40];
-int flagRun = 0;
-int flag = 0;
+int flagStepRun = 0;
+int bufferTimeRun = 0;
+unsigned long tickRun = 0;
 int Ton = 0;
 int Toff = 0;
 int prevMillis = 0;
-unsigned int tick = millis();
+unsigned long tick = millis();
 int counterBawah, counterAtas, counterCombine;
 int flagHasil = 0;
 int flagBuzz = 0;
 int counter = 0;
 int counterPrx = 0;
 
-
 // float lPress1=0;
- int flagRunExecution;
+int flagRunExecution;
 
 void setup()
 {
@@ -35,7 +38,8 @@ void setup()
   Serial.begin(9600);
   pinMode(buzzer, 1);
   pinMode(motor, 1);
-  pinMode(opto1, OUTPUT);
+  pinMode(opto1, INPUT_PULLUP);
+  pinMode(opto2, INPUT_PULLUP);
   pinMode(btnNext, INPUT_PULLUP);
   pinMode(btnPrev, INPUT_PULLUP);
   glcd.setCursor(0, 0);
@@ -43,12 +47,16 @@ void setup()
   glcd.setFontSize(1);
   sprintf(kata, "%5d", (int)Ton);
   glcd.print(kata);
+  Ton = EEPROM.read(0) * 100;
+  Toff = EEPROM.read(1) * 1000;
 
   glcd.setCursor(0, 30);
   glcd.setFontSize(1);
   sprintf(kata, "%5d", (int)Toff);
   glcd.print(kata);
   flagBuzz = 100;
+
+
 }
 // int a;
 // int lastPutaran=-1,lastKoma=-1;
@@ -60,6 +68,7 @@ void setup()
 int lastState = 10;
 int state = 0;
 int updateLCD = 0;
+int lastSensor = 0;
 void loop()
 {
   // put your main code here, to run repeatedly:
@@ -76,17 +85,22 @@ void loop()
     if (state == 0)
     {
       glcd.clear();
-      int kondisiSensor = analogRead(opto1);
-      if (kondisiSensor<100){
-        counterPrx++;
-        glcd.setCursor(0,30);
-        glcd.setFontSize(2);
-        sprintf(kata,"%3d",counterPrx);
-        glcd.print(kata);
-      }
-      glcd.setCursor(60, 2);
+      glcd.setFontSize(1);
+      glcd.setCursor(0, 2);
+      sprintf(kata, "Ton :%4d", Ton);
+      glcd.print(kata);
+      glcd.setCursor(0, 10);
+      sprintf(kata, "Toff:%4d", Toff);
+      glcd.print(kata);
+
+      glcd.setCursor(0, 30);
       glcd.setFontSize(2);
-      if (flagRun)
+      sprintf(kata, "%3d", counterPrx);
+      glcd.print(kata);
+      glcd.setCursor(70, 2);
+      glcd.setFontSize(2);
+
+      if (!flagRunExecution)
       {
         glcd.print("START");
       }
@@ -95,7 +109,7 @@ void loop()
         glcd.print("STOP");
       }
     }
-    
+
     else if (state == 1)
     {
       glcd.clear();
@@ -110,75 +124,123 @@ void loop()
       glcd.print(kata);
     }
   }
-    
-   if(flagRun){
-     if(flagRunExecution==1){
+
+  if (flagRunExecution == 1)
+  {
+    if (millis() - tickRun > 100)
+    { //100ms
+
+        Serial.println(flagStepRun);
+
+      if (flagStepRun)
+      { //on
         motorOn;
-        delay(Ton);
+        bufferTimeRun -= 100;
+      }
+      else
+      { //off
         motorOff;
-        delay(Toff);
-     }
-     else if(flagRunExecution==0){
-       motorOff;
-     }
-   }
-    
+        bufferTimeRun -= 100;
+      }
+
+      if (bufferTimeRun <= 0)
+      {
+        flagStepRun ^= 1;
+        if (flagStepRun == 1)
+        {
+          bufferTimeRun = Ton;
+        }
+        else
+        {
+          bufferTimeRun = Toff;
+        }
+      }
+      tickRun = millis();
+    }
+  }
+
   if (millis() - tick >= 1)
   {
     tick = millis();
     rutinButton();
-    if (flagBuzz > 0)
+    if (flagHasil != 0)
     {
-      digitalWrite(buzzer, 1);
-      flagBuzz--;
+      Serial.println(flagHasil);
+      Serial.println(state);
     }
-    else
-    {
-      digitalWrite(buzzer, 0);
-    }
+
+    //koding buzzer millis
+    // if (flagBuzz > 0)
+    // {
+    //   digitalWrite(buzzer, 1);
+    //   flagBuzz--;
+    // }
+    // else
+    // {
+    //   digitalWrite(buzzer, 0);
+    // }
   }
   glcd.rutinDisplay();
 
-  switch (state)
-  {
-  case 0: //menu standby
+  if (state == 0)
+  { //menu standby
     if (flagHasil == 1)
     {
       state = 1;
-    }
-      else if (flagHasil == 4)
-    {
-      flagRunExecution^=1;
-      updateLCD=1;
-    }
-    else if (flagHasil == 6)
-    {
-      counter=0;
-      updateLCD=1;
-    }
-    break;
-
-  case 1: //menu setting
-    if (flagHasil == 1)
-    {
-      state = 0;
+      if (Ton < 0)
+        Ton = 0;
+      if (Toff < 0)
+        Toff = 0;
     }
     else if (flagHasil == 4)
     {
-      Ton+=1000;
-      updateLCD=1;
+      flagRunExecution ^= 1;
+      updateLCD = 1;
     }
     else if (flagHasil == 6)
     {
-      Toff+=1000;
-      updateLCD=1;
-
+      counterPrx = 0;
+      updateLCD = 1;
     }
 
-    break;
+    int kondisiSensor = digitalRead(opto1);
+    if (lastSensor != kondisiSensor)
+    {
+      if (kondisiSensor == 1)
+      {
+        counterPrx++;
+
+        updateLCD = 1;
+      }
+      lastSensor = kondisiSensor;
+    }
   }
 
-  
+  else if (state == 1)
+  { //menu setting
+    if (flagHasil == 1)
+    {
+      state = 0;
+      EEPROM.write(0, Ton / 100);
+      EEPROM.write(1, Toff / 1000);
+    }
+    else if (flagHasil == 4)
+    {
+      Ton += 200;
+      if (Ton > 4000)
+        Ton = 0;
+      updateLCD = 1;
+    }
+    else if (flagHasil == 6)
+    {
+      Toff += 1000;
+      if (Toff > 10000)
+      {
+        Toff = 0;
+      }
+      updateLCD = 1;
+    }
+  }
 }
 
 void rutinButton()
@@ -237,8 +299,6 @@ void rutinButton()
     flagBuzz = 100;
   }
 }
-
-
 
 unsigned char btnNextPressed()
 {
