@@ -7,7 +7,7 @@ twinsGLCD glcd(A0, A1, A2, 8, 7, 6, 5, 4, 9);
 #define opto1 A3
 #define opto2 2
 #define buzzer A4
-#define motor A4
+#define motor 12
 #define reset A7
 #define motorOn digitalWrite(motor, HIGH)
 #define motorOff digitalWrite(motor, LOW)
@@ -169,16 +169,16 @@ void loop()
       Serial.println(state);
     }
 
-    //koding buzzer millis
-    // if (flagBuzz > 0)
-    // {
-    //   digitalWrite(buzzer, 1);
-    //   flagBuzz--;
-    // }
-    // else
-    // {
-    //   digitalWrite(buzzer, 0);
-    // }
+    // koding buzzer millis
+    if (flagBuzz > 0)
+    {
+      digitalWrite(buzzer, 1);
+      flagBuzz--;
+    }
+    else
+    {
+      digitalWrite(buzzer, 0);
+    }
   }
   glcd.rutinDisplay();
 
