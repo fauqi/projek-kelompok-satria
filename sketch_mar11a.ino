@@ -113,12 +113,19 @@ void loop()
     else if (state == 1)
     {
       glcd.clear();
-      glcd.setCursor(0, 2);
+      glcd.setFontSize(1);
+      glcd.setCursor(0, 0);
+      glcd.print("Ton");
+
+      glcd.setCursor(0, 30);
+      glcd.print("Toff");
+
+      glcd.setCursor(0, 10);
       glcd.setFontSize(2);
       sprintf(kata, "%5d", (int)Ton);
       glcd.print(kata);
 
-      glcd.setCursor(0, 30);
+      glcd.setCursor(0, 40);
       glcd.setFontSize(2);
       sprintf(kata, "%5d", (int)Toff);
       glcd.print(kata);
@@ -157,6 +164,9 @@ void loop()
       }
       tickRun = millis();
     }
+  }
+  else{
+    motorOff;
   }
 
   if (millis() - tick >= 1)
@@ -226,7 +236,7 @@ void loop()
     }
     else if (flagHasil == 4)
     {
-      Ton += 200;
+      Ton += 100;
       if (Ton > 4000)
         Ton = 0;
       updateLCD = 1;
